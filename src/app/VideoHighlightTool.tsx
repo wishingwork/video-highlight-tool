@@ -13,6 +13,7 @@ const VideoHighlightTool = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [activeTranscript, setActiveTranscript] = useState(0);
+  const [transcriptionText, setTranscriptionText] = useState('');
 
   const videoRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -39,7 +40,7 @@ const VideoHighlightTool = () => {
     { timestamp: "03:25", seconds: 205, title: "Support", description: "Customer service overview" }
   ];
 
-  const handleFileSelect = (event) => {
+  const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file && file.type.includes('video')) {
       setVideoFile(file);
@@ -50,19 +51,70 @@ const VideoHighlightTool = () => {
       setIsUploading(true);
       setTimeout(() => {
         setIsUploading(false);
-        processVideo();
+        processVideo(file);
       }, 2000);
     }
   };
 
-  const processVideo = () => {
+  const transcribeVideo = async (file) => {
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("model", "whisper-1");
+
+            const openaiRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+            },
+            body: formData,
+            });
+
+            const response = await openaiRes.json();
+            console.log(74, response.text);        
+            setTranscriptionText(response.text);
+            return response.text;           
+
+        } catch (error) {
+        console.error("Transcription failed:", error);
+        }  
+  };
+
+  const processVideo = async (file) => {
+    if (!file) return;
+
     setIsProcessing(true);
     // Simulate AI processing
-    setTimeout(() => {
-      setTranscription(mockTranscription);
-      setHighlights(mockHighlights);
-      setIsProcessing(false);
-    }, 3000);
+
+    try {
+        // Step 1: Upload video to Firebase Storage
+        // console.log('Uploading video to Firebase...');
+        // const videoUrl = await uploadVideoToFirebase(videoFile);
+        // console.log('Video uploaded:', videoUrl);
+        
+        // Step 2: Call transcription API
+        console.log('Starting transcription...');
+        const transcriptionResult = await transcribeVideo(file);
+        console.log('Transcription completed:', transcriptionResult);
+        
+        // Step 3: Process highlights from transcription
+        // console.log('Analyzing highlights...');
+        // const highlightsResult = await analyzeHighlights(transcriptionResult.transcription);
+        // console.log('Highlights analyzed:', highlightsResult);
+        
+        // Step 4: Update state with results
+        // setTranscription(transcriptionResult.transcription);
+        // setHighlights(highlightsResult.highlights);
+        setTranscription(mockTranscription);
+        setHighlights(mockHighlights);            
+    } catch (error) {
+        console.error('Processing failed:', error);
+        alert('Failed to process video: ' + error.message);
+    } finally {
+        setIsProcessing(false);
+    }
+
   };
 
   const handleTimeUpdate = () => {
