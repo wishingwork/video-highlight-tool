@@ -1,231 +1,244 @@
 "use client"
-import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Play, Pause, SkipForward, Clock, Zap, FileVideo } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Play, Pause, SkipForward, Clock, Zap, FileVideo } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const VideoHighlightTool = () => {
-  const [videoFile, setVideoFile] = useState(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [transcription, setTranscription] = useState([]);
-  const [highlights, setHighlights] = useState([]);
+  const [transcription, setTranscription] = useState<TranscriptItem[]>([]);
+  const [highlights, setHighlights] = useState<HighlightItem[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [activeTranscript, setActiveTranscript] = useState(0);
-  const [transcriptionText, setTranscriptionText] = useState('');
+//   const [transcriptionText, setTranscriptionText] = useState('');
 
-  const videoRef = useRef(null);
-  const fileInputRef = useRef(null);
+//   const videoRef = useRef(null);
+//   const fileInputRef = useRef(null);
 
-  // Mock data for demonstration
-  const mockTranscription = [
-    { timestamp: "00:15", seconds: 15, text: "Welcome to our comprehensive product demonstration" },
-    { timestamp: "00:32", seconds: 32, text: "Let me show you the key features that make this special" },
-    { timestamp: "01:05", seconds: 65, text: "First, we have the intuitive user interface" },
-    { timestamp: "01:23", seconds: 83, text: "The dashboard provides real-time analytics and insights" },
-    { timestamp: "01:45", seconds: 105, text: "Next, let's explore the advanced customization options" },
-    { timestamp: "02:10", seconds: 130, text: "Users can personalize their experience completely" },
-    { timestamp: "02:35", seconds: 155, text: "The integration capabilities are truly impressive" },
-    { timestamp: "03:00", seconds: 180, text: "Connect with over 100 popular business tools" },
-    { timestamp: "03:25", seconds: 205, text: "Finally, our world-class customer support" },
-    { timestamp: "03:50", seconds: 230, text: "Available 24/7 to help you succeed" }
-  ];
-
-  const mockHighlights = [
-    { timestamp: "00:32", seconds: 32, title: "Feature Overview", description: "Introduction to key product features" },
-    { timestamp: "01:23", seconds: 83, title: "Dashboard Demo", description: "Real-time analytics demonstration" },
-    { timestamp: "01:45", seconds: 105, title: "Customization", description: "Advanced personalization options" },
-    { timestamp: "02:35", seconds: 155, title: "Integrations", description: "Third-party tool connections" },
-    { timestamp: "03:25", seconds: 205, title: "Support", description: "Customer service overview" }
-  ];
-
-  const transcriptObj =[
-    {
-        "timestamp": "00:08",
-        "seconds": 8,
-        "text": "Anti-war demonstrators protest U.S. involvement in the Vietnam War in mass marches, rallies and demonstrations."
-    },
-    {
-        "timestamp": "00:15",
-        "seconds": 15,
-        "text": "Central Park is the starting point for the parade to the UN building."
-    },
-    {
-        "timestamp": "00:18",
-        "seconds": 18,
-        "text": "The estimated 125,000 Manhattan marchers include students, housewives, beatnik poets, doctors, businessmen, teachers, priests and nuns."
-    },
-    {
-        "timestamp": "00:28",
-        "seconds": 28,
-        "text": "Makeup and costumes were bizarre."
-    },
-    {
-        "timestamp": "00:35",
-        "seconds": 35,
-        "text": "Before the parade, mass draft card burning was urged."
-    },
-    {
-        "timestamp": "00:38",
-        "seconds": 38,
-        "text": "Demonstrators claimed 200 cards were burned, but no accurate count could be determined."
-    },
-    {
-        "timestamp": "00:43",
-        "seconds": 43,
-        "text": "Reporters and onlookers were jostled away on purpose."
-    },
-    {
-        "timestamp": "00:48",
-        "seconds": 48,
-        "text": "Although mostly peaceful, shouted confrontations were frequent and fiery during the course of the march."
-    },
-    {
-        "timestamp": "00:56",
-        "seconds": 56,
-        "text": "The anti-war marchers were picketed by anti anti-war marchers who were hawkish toward the parading doves."
-    },
-    {
-        "timestamp": "01:06",
-        "seconds": 106,
-        "text": "Civil rights leader Martin Luther King leads the procession to the United Nations where he urges UN pressure to force the U.S. to stop bombing North Vietnam."
-    },
-    {
-        "timestamp": "01:19",
-        "seconds": 119,
-        "text": "Police arrested five persons as disorderly."
-    },
-    {
-        "timestamp": "01:22",
-        "seconds": 122,
-        "text": "Three were grabbed when they rushed the parade float."
-    },
-    {
-        "timestamp": "01:24",
-        "seconds": 124,
-        "text": "No serious injuries, however, in New York’s biggest anti-war march."
-    },
-    {
-        "timestamp": "01:31",
-        "seconds": 131,
-        "text": "A companion peace demonstration brings out 50,000 marchers in downtown San Francisco."
-    },
-    {
-        "timestamp": "01:36",
-        "seconds": 136,
-        "text": "They parade two miles along Market Street, pacifists and hippies together."
-    },
-    {
-        "timestamp": "01:43",
-        "seconds": 143,
-        "text": "Gigantic Kezar Stadium holds the mass rally where anti-war songs and speeches trigger a short scuffle between pro and con factions."
-    },
-    {
-        "timestamp": "01:50",
-        "seconds": 150,
-        "text": "No one was injured."
-    },
-    {
-        "timestamp": "01:53",
-        "seconds": 153,
-        "text": "Both demonstrations were sponsored by a loose coalition of left-wing pacifist and moderate anti-war groups."
-    },
-    {
-        "timestamp": "01:59",
-        "seconds": 159,
-        "text": "President Johnson, meanwhile, let it be known that the FBI is closely watching all anti-war activities."
-    },
-    {
-        "timestamp": "02:08",
-        "seconds": 208,
-        "text": "In Rome, a peace demonstration ironically erupts into violence near the U.S. embassy along the glamorous Via Veneto."
-    },
-    {
-        "timestamp": "02:15",
-        "seconds": 215,
-        "text": "Police alerted to possible trouble, stopped the marchers just short of their goal, and then the march turned into a riot."
-    },
-    {
-        "timestamp": "02:22",
-        "seconds": 222,
-        "text": "Peace placards, cafe chairs and fists flew in all directions."
-    },
-    {
-        "timestamp": "02:26",
-        "seconds": 226,
-        "text": "The next phase, a sit-down protest, but Rome police and firemen, too, had a solution."
-    },
-    {
-        "timestamp": "02:32",
-        "seconds": 232,
-        "text": "A solution H2O applied freely and under high pressure by the Rome fire brigade."
-    },
-    {
-        "timestamp": "02:37",
-        "seconds": 237,
-        "text": "The strong water jets bowled over demonstrators one after another."
-    },
-    {
-        "timestamp": "02:41",
-        "seconds": 241,
-        "text": "They dried out in the pokey."
-    },
-    {
-        "timestamp": "02:43",
-        "seconds": 243,
-        "text": "It took police one hour to break up the mob."
-    },
-    {
-        "timestamp": "02:46",
-        "seconds": 246,
-        "text": "33 rioters were arrested."
-    },
-    {
-        "timestamp": "02:48",
-        "seconds": 248,
-        "text": "Internal drama in the eternal city."
-    }
-];
-  const highlightsObj = [
-    {
-        "timestamp": "00:08",
-        "seconds": 8,
-        "title": "Protest March",
-        "description": "Anti-war demonstrators protest US involvement in Vietnam War"
-    },
-    {
-        "timestamp": "00:35",
-        "seconds": 35,
-        "title": "Draft Card Burning",
-        "description": "Mass draft card burning urged; 200 claimed burned, count uncertain"
-    },
-    {
-        "timestamp": "01:07",
-        "seconds": 67,
-        "title": "MLK Leads March",
-        "description": "Civil rights leader Martin Luther King leads protest to the United Nations"
-    },
-    {
-        "timestamp": "01:29",
-        "seconds": 89,
-        "title": "San Francisco March",
-        "description": "50,000 marchers in downtown San Francisco; a two-mile parade on Market Street"
-    },
-    {
-        "timestamp": "02:08",
-        "seconds": 128,
-        "title": "Rome Riot",
-        "description": "Peace march in Rome turns into a riot; police use water hoses to disperse crowds"
-    }
-];
-
-  const mockTranscriptionText = "swallowing. Anti-war demonstrators protest U.S. involvement in the Vietnam War in mass marches, rallies, and demonstrations. Central Park is the starting point for the parade to the U.N. building. The estimated 125,000 Manhattan marchers include students, housewives, beatnik poets, doctors, businessmen, teachers, priests, and nuns. Makeup and costumes were bizarre. Before the parade, mass draft card burning was urged. Demonstrators claimed 200 cards were burned, but no accurate count could be determined. Reporters and onlookers were jostled away on purpose. Although mostly peaceful, shouted confrontations were frequent and fiery during the course of the march. The anti-war marchers were picketed by anti-anti-war marchers, who were hawkish toward the parading doves. Civil rights leader Martin Luther King leads the procession to the United Nations, where he urges U.N. pressure to force the U.S. to stop bombing North Vietnam. Police arrested five persons as disorderly. Three were grabbed when they rushed the parade float. No serious injuries, however, in New York's biggest anti-war march. A companion peace demonstration brings out 50,000 marchers in downtown San Francisco. They parade two miles along Market Street, pacifists and hippies together. Gigantic Kezar Stadium holds the mass rally, where anti-war songs and speeches figure a short scuffle between pro and con factions. No one was injured. Both demonstrations were sponsored by a loose coalition of left-wing pacifist and moderate anti-war groups. President Johnson, meanwhile, let it be known that the FBI is closely watching all anti-war activity. In Rome, a peace demonstration ironically erupts into violence near the U.S. Embassy along the glamorous Via Veneto. Police, alerted to possible trouble, stop the marchers just short of their goal and then the march turned into a riot. Peace placards, cafe chairs, and fists flew in all directions. The next phase, a sit-down protest, but Rome police and firemen too had a solution. The solution, H20, applied freely and under high pressure by the Rome Fire Brigade. The strong water jets bowled over demonstrators one after another. They dried out in the pokey. It took police one hour to break up the mob. Thirty-three rioters were arrested. Internal drama in the Eternal City.";
-  const mockHighlightsText = 'Sure, here is a JSON array of the 5 key highlight moments of the video:\n\n```json\n[\n  {\n    "timestamp": "00:06",\n    "seconds": 6,\n    "title": "NYC March",\n    "description": "Anti-war protesters march against the Vietnam War."\n  },\n  {\n    "timestamp": "00:35",\n    "seconds": 35,\n    "title": "Draft Card Burning",\n    "description": "Protesters burn draft cards in demonstration."\n  },\n  {\n    "timestamp": "01:06",\n    "seconds": 66,\n    "title": "MLK Protest",\n    "description": "Martin Luther King leads a protest to the UN."\n  },\n  {\n    "timestamp": "01:28",\n    "seconds": 88,\n    "title": "San Francisco March",\n    "description": "Companion demonstration brings out 50,000."\n  },\n  {\n    "timestamp": "02:08",\n    "seconds": 128,\n    "title": "Rome Riot",\n    "description": "Peace demonstration turns violent in Rome."\n  }\n]\n```\n\nI hope this is what you were looking for! Let me know if you need further assistance.';
+  type TranscriptItem = {
+    timestamp: string;
+    seconds: number;
+    text: string;
+  };
   
-  const handleFileSelect = async (event) => {
-    const file = event.target.files[0];
+  type HighlightItem = {
+    timestamp: string;
+    seconds: number;
+    title: string;
+    description: string;
+  };
+//   const mockTranscription: TranscriptItem[] = [
+//     { timestamp: "00:15", seconds: 15, text: "Welcome to our comprehensive product demonstration" },
+//     { timestamp: "00:32", seconds: 32, text: "Let me show you the key features that make this special" },
+//     { timestamp: "01:05", seconds: 65, text: "First, we have the intuitive user interface" },
+//     { timestamp: "01:23", seconds: 83, text: "The dashboard provides real-time analytics and insights" },
+//     { timestamp: "01:45", seconds: 105, text: "Next, let's explore the advanced customization options" },
+//     { timestamp: "02:10", seconds: 130, text: "Users can personalize their experience completely" },
+//     { timestamp: "02:35", seconds: 155, text: "The integration capabilities are truly impressive" },
+//     { timestamp: "03:00", seconds: 180, text: "Connect with over 100 popular business tools" },
+//     { timestamp: "03:25", seconds: 205, text: "Finally, our world-class customer support" },
+//     { timestamp: "03:50", seconds: 230, text: "Available 24/7 to help you succeed" }
+//   ];
+
+//   const mockHighlights: HighlightItem[] = [
+//     { timestamp: "00:32", seconds: 32, title: "Feature Overview", description: "Introduction to key product features" },
+//     { timestamp: "01:23", seconds: 83, title: "Dashboard Demo", description: "Real-time analytics demonstration" },
+//     { timestamp: "01:45", seconds: 105, title: "Customization", description: "Advanced personalization options" },
+//     { timestamp: "02:35", seconds: 155, title: "Integrations", description: "Third-party tool connections" },
+//     { timestamp: "03:25", seconds: 205, title: "Support", description: "Customer service overview" }
+//   ];
+const transcriptObj: TranscriptItem[] = [
+  {
+      "timestamp": "00:08",
+      "seconds": 8,
+      "text": "Anti-war demonstrators protest U.S. involvement in the Vietnam War in mass marches, rallies and demonstrations."
+  },
+  {
+      "timestamp": "00:15",
+      "seconds": 15,
+      "text": "Central Park is the starting point for the parade to the UN building."
+  },
+  {
+      "timestamp": "00:18",
+      "seconds": 18,
+      "text": "The estimated 125,000 Manhattan marchers include students, housewives, beatnik poets, doctors, businessmen, teachers, priests and nuns."
+  },
+  {
+      "timestamp": "00:28",
+      "seconds": 28,
+      "text": "Makeup and costumes were bizarre."
+  },
+  {
+      "timestamp": "00:35",
+      "seconds": 35,
+      "text": "Before the parade, mass draft card burning was urged."
+  },
+  {
+      "timestamp": "00:38",
+      "seconds": 38,
+      "text": "Demonstrators claimed 200 cards were burned, but no accurate count could be determined."
+  },
+  {
+      "timestamp": "00:43",
+      "seconds": 43,
+      "text": "Reporters and onlookers were jostled away on purpose."
+  },
+  {
+      "timestamp": "00:48",
+      "seconds": 48,
+      "text": "Although mostly peaceful, shouted confrontations were frequent and fiery during the course of the march."
+  },
+  {
+      "timestamp": "00:56",
+      "seconds": 56,
+      "text": "The anti-war marchers were picketed by anti anti-war marchers who were hawkish toward the parading doves."
+  },
+  {
+      "timestamp": "01:06",
+      "seconds": 106,
+      "text": "Civil rights leader Martin Luther King leads the procession to the United Nations where he urges UN pressure to force the U.S. to stop bombing North Vietnam."
+  },
+  {
+      "timestamp": "01:19",
+      "seconds": 119,
+      "text": "Police arrested five persons as disorderly."
+  },
+  {
+      "timestamp": "01:22",
+      "seconds": 122,
+      "text": "Three were grabbed when they rushed the parade float."
+  },
+  {
+      "timestamp": "01:24",
+      "seconds": 124,
+      "text": "No serious injuries, however, in New York’s biggest anti-war march."
+  },
+  {
+      "timestamp": "01:31",
+      "seconds": 131,
+      "text": "A companion peace demonstration brings out 50,000 marchers in downtown San Francisco."
+  },
+  {
+      "timestamp": "01:36",
+      "seconds": 136,
+      "text": "They parade two miles along Market Street, pacifists and hippies together."
+  },
+  {
+      "timestamp": "01:43",
+      "seconds": 143,
+      "text": "Gigantic Kezar Stadium holds the mass rally where anti-war songs and speeches trigger a short scuffle between pro and con factions."
+  },
+  {
+      "timestamp": "01:50",
+      "seconds": 150,
+      "text": "No one was injured."
+  },
+  {
+      "timestamp": "01:53",
+      "seconds": 153,
+      "text": "Both demonstrations were sponsored by a loose coalition of left-wing pacifist and moderate anti-war groups."
+  },
+  {
+      "timestamp": "01:59",
+      "seconds": 159,
+      "text": "President Johnson, meanwhile, let it be known that the FBI is closely watching all anti-war activities."
+  },
+  {
+      "timestamp": "02:08",
+      "seconds": 208,
+      "text": "In Rome, a peace demonstration ironically erupts into violence near the U.S. embassy along the glamorous Via Veneto."
+  },
+  {
+      "timestamp": "02:15",
+      "seconds": 215,
+      "text": "Police alerted to possible trouble, stopped the marchers just short of their goal, and then the march turned into a riot."
+  },
+  {
+      "timestamp": "02:22",
+      "seconds": 222,
+      "text": "Peace placards, cafe chairs and fists flew in all directions."
+  },
+  {
+      "timestamp": "02:26",
+      "seconds": 226,
+      "text": "The next phase, a sit-down protest, but Rome police and firemen, too, had a solution."
+  },
+  {
+      "timestamp": "02:32",
+      "seconds": 232,
+      "text": "A solution H2O applied freely and under high pressure by the Rome fire brigade."
+  },
+  {
+      "timestamp": "02:37",
+      "seconds": 237,
+      "text": "The strong water jets bowled over demonstrators one after another."
+  },
+  {
+      "timestamp": "02:41",
+      "seconds": 241,
+      "text": "They dried out in the pokey."
+  },
+  {
+      "timestamp": "02:43",
+      "seconds": 243,
+      "text": "It took police one hour to break up the mob."
+  },
+  {
+      "timestamp": "02:46",
+      "seconds": 246,
+      "text": "33 rioters were arrested."
+  },
+  {
+      "timestamp": "02:48",
+      "seconds": 248,
+      "text": "Internal drama in the eternal city."
+  }
+];
+const highlightsObj: HighlightItem[] = [
+  {
+      "timestamp": "00:08",
+      "seconds": 8,
+      "title": "Protest March",
+      "description": "Anti-war demonstrators protest US involvement in Vietnam War"
+  },
+  {
+      "timestamp": "00:35",
+      "seconds": 35,
+      "title": "Draft Card Burning",
+      "description": "Mass draft card burning urged; 200 claimed burned, count uncertain"
+  },
+  {
+      "timestamp": "01:07",
+      "seconds": 67,
+      "title": "MLK Leads March",
+      "description": "Civil rights leader Martin Luther King leads protest to the United Nations"
+  },
+  {
+      "timestamp": "01:29",
+      "seconds": 89,
+      "title": "San Francisco March",
+      "description": "50,000 marchers in downtown San Francisco; a two-mile parade on Market Street"
+  },
+  {
+      "timestamp": "02:08",
+      "seconds": 128,
+      "title": "Rome Riot",
+      "description": "Peace march in Rome turns into a riot; police use water hoses to disperse crowds"
+  }
+];
+
+//   const mockTranscriptionText = "swallowing. Anti-war demonstrators protest U.S. involvement in the Vietnam War in mass marches, rallies, and demonstrations. Central Park is the starting point for the parade to the U.N. building. The estimated 125,000 Manhattan marchers include students, housewives, beatnik poets, doctors, businessmen, teachers, priests, and nuns. Makeup and costumes were bizarre. Before the parade, mass draft card burning was urged. Demonstrators claimed 200 cards were burned, but no accurate count could be determined. Reporters and onlookers were jostled away on purpose. Although mostly peaceful, shouted confrontations were frequent and fiery during the course of the march. The anti-war marchers were picketed by anti-anti-war marchers, who were hawkish toward the parading doves. Civil rights leader Martin Luther King leads the procession to the United Nations, where he urges U.N. pressure to force the U.S. to stop bombing North Vietnam. Police arrested five persons as disorderly. Three were grabbed when they rushed the parade float. No serious injuries, however, in New York's biggest anti-war march. A companion peace demonstration brings out 50,000 marchers in downtown San Francisco. They parade two miles along Market Street, pacifists and hippies together. Gigantic Kezar Stadium holds the mass rally, where anti-war songs and speeches figure a short scuffle between pro and con factions. No one was injured. Both demonstrations were sponsored by a loose coalition of left-wing pacifist and moderate anti-war groups. President Johnson, meanwhile, let it be known that the FBI is closely watching all anti-war activity. In Rome, a peace demonstration ironically erupts into violence near the U.S. Embassy along the glamorous Via Veneto. Police, alerted to possible trouble, stop the marchers just short of their goal and then the march turned into a riot. Peace placards, cafe chairs, and fists flew in all directions. The next phase, a sit-down protest, but Rome police and firemen too had a solution. The solution, H20, applied freely and under high pressure by the Rome Fire Brigade. The strong water jets bowled over demonstrators one after another. They dried out in the pokey. It took police one hour to break up the mob. Thirty-three rioters were arrested. Internal drama in the Eternal City.";
+//   const mockHighlightsText = 'Sure, here is a JSON array of the 5 key highlight moments of the video:\n\n```json\n[\n  {\n    "timestamp": "00:06",\n    "seconds": 6,\n    "title": "NYC March",\n    "description": "Anti-war protesters march against the Vietnam War."\n  },\n  {\n    "timestamp": "00:35",\n    "seconds": 35,\n    "title": "Draft Card Burning",\n    "description": "Protesters burn draft cards in demonstration."\n  },\n  {\n    "timestamp": "01:06",\n    "seconds": 66,\n    "title": "MLK Protest",\n    "description": "Martin Luther King leads a protest to the UN."\n  },\n  {\n    "timestamp": "01:28",\n    "seconds": 88,\n    "title": "San Francisco March",\n    "description": "Companion demonstration brings out 50,000."\n  },\n  {\n    "timestamp": "02:08",\n    "seconds": 128,\n    "title": "Rome Riot",\n    "description": "Peace demonstration turns violent in Rome."\n  }\n]\n```\n\nI hope this is what you were looking for! Let me know if you need further assistance.';
+  
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files && event.target.files[0];
     if (file && file.type.includes('video')) {
       setVideoFile(file);
       const url = URL.createObjectURL(file);
@@ -240,33 +253,33 @@ const VideoHighlightTool = () => {
     }
   };
 
-  const transcribe = async (file) => {
+//   const transcribe = async (file: File) => {
 
-        try {
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("model", "whisper-1");
+//         try {
+//             const formData = new FormData();
+//             formData.append("file", file);
+//             formData.append("model", "whisper-1");
 
-            const openaiRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
-            },
-            body: formData,
-            });
+//             const openaiRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+//             method: "POST",
+//             headers: {
+//                 Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
+//             },
+//             body: formData,
+//             });
 
-            const response = await openaiRes.json();
-            console.log(74, response.text);        
-            setTranscriptionText(response.text);
-            return response.text;           
+//             const response = await openaiRes.json();
+//             console.log(74, response.text);        
+//             // setTranscriptionText(response.text);
+//             return response.text;           
 
-        } catch (error) {
-        console.error("Transcription failed:", error);
-        }  
-  };
+//         } catch (error) {
+//         console.error("Transcription failed:", error);
+//         }  
+//   };
 
-  const transcribeVideo = async (url) => {
-        const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+  const transcribeVideo = async (url: string) => {
+        const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
@@ -301,7 +314,7 @@ const VideoHighlightTool = () => {
         prompt
         ]);
         const response = await result.response;
-        const transcriptionText = response.text();        
+        const transcriptionText = response.text(); 
         let transcription;
         try {
             // Extract JSON array from highlightsText (which may contain extra text and code block markers)
@@ -334,8 +347,8 @@ const VideoHighlightTool = () => {
             };
     }  
 
-  const analyzeHighlights = async (url) => {
-        const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+  const analyzeHighlights = async (url: string) => {
+        const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
@@ -345,6 +358,10 @@ const VideoHighlightTool = () => {
         
         // Convert to base64 for Gemini
         const videoBase64 = Buffer.from(videoBuffer).toString('base64');
+
+        const transcriptionText = transcriptObj.map(item => 
+        `${item.timestamp}: ${item.text}`
+        ).join('\n');
 
         const prompt = `
         Analyze this video transcription and identify exactly 5 key highlight moments.
@@ -415,7 +432,7 @@ const VideoHighlightTool = () => {
         } catch (parseError) {
             console.error('Failed to parse highlights:', parseError);
             // Fallback: create highlights from transcription
-            highlights = transcription.slice(0, 5).map((item, index) => ({
+            highlights = transcriptObj.slice(0, 5).map((item, index) => ({
                 timestamp: item.timestamp,
                 seconds: item.seconds,
                 title: `Highlight ${index + 1}`,
@@ -429,7 +446,7 @@ const VideoHighlightTool = () => {
         };
     }
 
-  const processVideo = async (file, url) => {
+  const processVideo = async (file: File, url: string) => {
     if (!file) return;
 
     setIsProcessing(true);
@@ -443,23 +460,25 @@ const VideoHighlightTool = () => {
         
         // Step 2: Call transcription API
         console.log('Starting transcription...');
+        // const transcriptionResult = transcriptObj;
         const transcriptionResult = await transcribeVideo(url);
         console.log('Transcription completed:', transcriptionResult);
         
         // Step 3: Process highlights from transcription
         console.log('Analyzing highlights...');
         // const highlightsResult = await analyzeHighlights(transcriptionResult.transcription);
+        // const highlightsResult = highlightsObj;
         const highlightsResult = await analyzeHighlights(url);
         console.log('Highlights analyzed:', highlightsResult);
         
         // Step 4: Update state with results
-        setTranscription(transcriptionResult.transcription);
-        setHighlights(highlightsResult.highlights);
-        // setTranscription(mockTranscription);
-        // setHighlights(mockHighlights);            
+        // setTranscription(transcriptionResult.transcription);
+        // setHighlights(highlightsResult.highlights);
+        setTranscription(transcriptObj);
+        setHighlights(highlightsObj);            
     } catch (error) {
         console.error('Processing failed:', error);
-        alert('Failed to process video: ' + error.message);
+        // alert('Failed to process video: ' + error.message);
     } finally {
         setIsProcessing(false);
     }
@@ -483,7 +502,7 @@ const VideoHighlightTool = () => {
     }
   };
 
-  const seekTo = (seconds) => {
+  const seekTo = (seconds: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime = seconds;
       setCurrentTime(seconds);
@@ -501,7 +520,7 @@ const VideoHighlightTool = () => {
     }
   };
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
