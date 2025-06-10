@@ -286,8 +286,8 @@ const VideoHighlightTool = () => {
         
         Example format:
         [
-            {"timestamp": "00:15", "seconds": 15, "text": "Welcome to our presentation"},
-            {"timestamp": "00:32", "seconds": 32, "text": "Let me show you the features"}
+            {"timestamp": "00:15", "seconds": 15, "text": "Welcome to our presentation"},           
+            {"timestamp": "01:23", "seconds": 83, "text": "Let me show you the features"}
         ]
         `;
 
