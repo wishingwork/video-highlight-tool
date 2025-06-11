@@ -460,15 +460,15 @@ const highlightsObj: HighlightItem[] = [
         
         // Step 2: Call transcription API
         console.log('Starting transcription...');
-        // const transcriptionResult = transcriptObj;
-        const transcriptionResult = await transcribeVideo(url);
+        const transcriptionResult = transcriptObj;
+        // const transcriptionResult = await transcribeVideo(url);
         console.log('Transcription completed:', transcriptionResult);
         
         // Step 3: Process highlights from transcription
         console.log('Analyzing highlights...');
         // const highlightsResult = await analyzeHighlights(transcriptionResult.transcription);
-        // const highlightsResult = highlightsObj;
-        const highlightsResult = await analyzeHighlights(url);
+        const highlightsResult = highlightsObj;
+        // const highlightsResult = await analyzeHighlights(url);
         console.log('Highlights analyzed:', highlightsResult);
         
         // Step 4: Update state with results
@@ -563,6 +563,42 @@ const highlightsObj: HighlightItem[] = [
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Transcript Section */}
+            <div className="lg:col-span-1">
+              <div className="bg-slate-800 rounded-xl p-6 shadow-2xl h-full">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Clock className="w-5 h-5 mr-2 text-blue-500" />
+                  Transcript
+                </h3>
+                {transcription.length > 0 ? (
+                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                    {transcription.map((item, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-lg cursor-pointer transition-all ${
+                          activeTranscript === index 
+                            ? 'bg-blue-600 bg-opacity-30 border border-blue-500' 
+                            : 'bg-slate-700 hover:bg-slate-600'
+                        }`}
+                        onClick={() => seekTo(item.seconds)}
+                      >
+                        <div className="text-sm text-blue-400 font-medium mb-1">
+                          {item.timestamp}
+                        </div>
+                        <div className="text-sm leading-relaxed">
+                          {item.text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-slate-400 py-8">
+                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Transcript will appear here after processing</p>
+                  </div>
+                )}
+              </div>
+            </div>
             {/* Video Player Section */}
             <div className="lg:col-span-2">
               <div className="bg-slate-800 rounded-xl p-6 shadow-2xl">
@@ -651,42 +687,7 @@ const highlightsObj: HighlightItem[] = [
               </div>
             </div>
 
-            {/* Transcript Section */}
-            <div className="lg:col-span-1">
-              <div className="bg-slate-800 rounded-xl p-6 shadow-2xl h-full">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Clock className="w-5 h-5 mr-2 text-blue-500" />
-                  Transcript
-                </h3>
-                {transcription.length > 0 ? (
-                  <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                    {transcription.map((item, index) => (
-                      <div
-                        key={index}
-                        className={`p-3 rounded-lg cursor-pointer transition-all ${
-                          activeTranscript === index 
-                            ? 'bg-blue-600 bg-opacity-30 border border-blue-500' 
-                            : 'bg-slate-700 hover:bg-slate-600'
-                        }`}
-                        onClick={() => seekTo(item.seconds)}
-                      >
-                        <div className="text-sm text-blue-400 font-medium mb-1">
-                          {item.timestamp}
-                        </div>
-                        <div className="text-sm leading-relaxed">
-                          {item.text}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-slate-400 py-8">
-                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Transcript will appear here after processing</p>
-                  </div>
-                )}
-              </div>
-            </div>
+
           </div>
         )}
       </div>
