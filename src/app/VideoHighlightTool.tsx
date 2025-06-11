@@ -12,7 +12,7 @@ const VideoHighlightTool = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcription, setTranscription] = useState<TranscriptItem[]>([]);
-  const [highlights, setHighlights] = useState<HighlightItem[]>([]);
+  // const [highlights, setHighlights] = useState<HighlightItem[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -453,7 +453,7 @@ const highlightsObj: HighlightItem[] = [
         // setTranscription(transcriptionResult.transcription);
         // setHighlights(highlightsResult.highlights);
         setTranscription(transcriptObj);
-        setHighlights(highlightsObj);            
+        // setHighlights(highlightsObj);            
     } catch (error) {
         console.error('Processing failed:', error);
         // alert('Failed to process video: ' + error.message);
