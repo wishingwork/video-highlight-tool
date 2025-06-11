@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useRef } from 'react';
 import { Play, Pause, SkipForward, Clock, Zap, FileVideo } from 'lucide-react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const VideoHighlightTool = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -248,7 +248,7 @@ const highlightsObj: HighlightItem[] = [
       setIsUploading(true);
       setTimeout(() => {
         setIsUploading(false);
-        processVideo(file, url);
+        processVideo(file);
       }, 2000);
     }
   };
@@ -278,175 +278,175 @@ const highlightsObj: HighlightItem[] = [
 //         }  
 //   };
 
-  const transcribeVideo = async (url: string) => {
-        const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+  // const transcribeVideo = async (url: string) => {
+  //       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
-        // Download video file for processing
-        const videoResponse = await fetch(url);
-        const videoBuffer = await videoResponse.arrayBuffer();
+  //       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+  //       // Download video file for processing
+  //       const videoResponse = await fetch(url);
+  //       const videoBuffer = await videoResponse.arrayBuffer();
         
-        // Convert to base64 for Gemini
-        const videoBase64 = Buffer.from(videoBuffer).toString('base64');
+  //       // Convert to base64 for Gemini
+  //       const videoBase64 = Buffer.from(videoBuffer).toString('base64');
 
-        const prompt = `
-        Please transcribe this video and provide timestamps for each segment.
-        Format the response as a JSON array with objects containing:
-        - timestamp: in "mm:ss" format
-        - seconds: timestamp in seconds (number)
-        - text: the transcribed text
+  //       const prompt = `
+  //       Please transcribe this video and provide timestamps for each segment.
+  //       Format the response as a JSON array with objects containing:
+  //       - timestamp: in "mm:ss" format
+  //       - seconds: timestamp in seconds (number)
+  //       - text: the transcribed text
         
-        Example format:
-        [
-            {"timestamp": "00:15", "seconds": 15, "text": "Welcome to our presentation"},           
-            {"timestamp": "01:23", "seconds": 83, "text": "Let me show you the features"}
-        ]
-        `;
+  //       Example format:
+  //       [
+  //           {"timestamp": "00:15", "seconds": 15, "text": "Welcome to our presentation"},           
+  //           {"timestamp": "01:23", "seconds": 83, "text": "Let me show you the features"}
+  //       ]
+  //       `;
 
-        const result = await model.generateContent([
-        {
-            inlineData: {
-            mimeType: 'video/mp4',
-            data: videoBase64
-            }
-        },
-        prompt
-        ]);
-        const response = await result.response;
-        const transcriptionText = response.text(); 
-        let transcription;
-        try {
-            // Extract JSON array from highlightsText (which may contain extra text and code block markers)
-            const jsonMatch = transcriptionText.match(/```json\s*([\s\S]*?)\s*```/i) || transcriptionText.match(/\[\s*{[\s\S]*}\s*\]/);
-            if (jsonMatch) {
-                const jsonString = jsonMatch[1] ? jsonMatch[1] : jsonMatch[0];
-                transcription = JSON.parse(jsonString);
-            } else {
-                // If JSON parsing fails, create a simple transcription
-                transcription = [{
-                    timestamp: "00:00",
-                    seconds: 0,
-                    text: transcriptionText
-                }];
-            }
+  //       const result = await model.generateContent([
+  //       {
+  //           inlineData: {
+  //           mimeType: 'video/mp4',
+  //           data: videoBase64
+  //           }
+  //       },
+  //       prompt
+  //       ]);
+  //       const response = await result.response;
+  //       const transcriptionText = response.text(); 
+  //       let transcription;
+  //       try {
+  //           // Extract JSON array from highlightsText (which may contain extra text and code block markers)
+  //           const jsonMatch = transcriptionText.match(/```json\s*([\s\S]*?)\s*```/i) || transcriptionText.match(/\[\s*{[\s\S]*}\s*\]/);
+  //           if (jsonMatch) {
+  //               const jsonString = jsonMatch[1] ? jsonMatch[1] : jsonMatch[0];
+  //               transcription = JSON.parse(jsonString);
+  //           } else {
+  //               // If JSON parsing fails, create a simple transcription
+  //               transcription = [{
+  //                   timestamp: "00:00",
+  //                   seconds: 0,
+  //                   text: transcriptionText
+  //               }];
+  //           }
             
-            // Ensure we have exactly 5 highlights
-            if (!Array.isArray(transcription)) {
-                throw new Error('Response is not an array');
-            }        
+  //           // Ensure we have exactly 5 highlights
+  //           if (!Array.isArray(transcription)) {
+  //               throw new Error('Response is not an array');
+  //           }        
         
-        } catch (parseError) {
-            console.error('Failed to parse highlights:', parseError);
-            // Fallback: create highlights from transcription
-        }
+  //       } catch (parseError) {
+  //           console.error('Failed to parse highlights:', parseError);
+  //           // Fallback: create highlights from transcription
+  //       }
 
-        return { 
-            transcription: transcription,
-            raw: transcriptionText 
-            };
-    }  
+  //       return { 
+  //           transcription: transcription,
+  //           raw: transcriptionText 
+  //           };
+  //   }  
 
-  const analyzeHighlights = async (url: string) => {
-        const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
+  // const analyzeHighlights = async (url: string) => {
+  //       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
-        // Download video file for processing
-        const videoResponse = await fetch(url);
-        const videoBuffer = await videoResponse.arrayBuffer();
+  //       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+  //       // Download video file for processing
+  //       const videoResponse = await fetch(url);
+  //       const videoBuffer = await videoResponse.arrayBuffer();
         
-        // Convert to base64 for Gemini
-        const videoBase64 = Buffer.from(videoBuffer).toString('base64');
+  //       // Convert to base64 for Gemini
+  //       const videoBase64 = Buffer.from(videoBuffer).toString('base64');
 
-        const transcriptionText = transcriptObj.map(item => 
-        `${item.timestamp}: ${item.text}`
-        ).join('\n');
+  //       const transcriptionText = transcriptObj.map(item => 
+  //       `${item.timestamp}: ${item.text}`
+  //       ).join('\n');
 
-        const prompt = `
-        Analyze this video transcription and identify exactly 5 key highlight moments.
-        Consider moments that are:
-        - Most informative or educational
-        - Action items or important decisions
-        - Demonstrations or examples
-        - Key conclusions or summaries
-        - Exciting or engaging content
+  //       const prompt = `
+  //       Analyze this video transcription and identify exactly 5 key highlight moments.
+  //       Consider moments that are:
+  //       - Most informative or educational
+  //       - Action items or important decisions
+  //       - Demonstrations or examples
+  //       - Key conclusions or summaries
+  //       - Exciting or engaging content
         
-        Transcription:
-        ${transcriptionText}
+  //       Transcription:
+  //       ${transcriptionText}
         
-        Return a JSON array only with exactly 5 objects and without any other words so I can use Json.parse to parse the JSON array, each containing:
-        - timestamp: in "mm:ss" format (must match existing timestamps)
-        - seconds: timestamp in seconds (number)
-        - title: brief title for the highlight (max 20 characters)
-        - description: short description (max 60 characters)
+  //       Return a JSON array only with exactly 5 objects and without any other words so I can use Json.parse to parse the JSON array, each containing:
+  //       - timestamp: in "mm:ss" format (must match existing timestamps)
+  //       - seconds: timestamp in seconds (number)
+  //       - title: brief title for the highlight (max 20 characters)
+  //       - description: short description (max 60 characters)
         
-        Example format:
-        [
-            {
-            "timestamp": "01:23",
-            "seconds": 83,
-            "title": "Key Demo",
-            "description": "Main feature demonstration"
-            }
-        ]
-        `;
+  //       Example format:
+  //       [
+  //           {
+  //           "timestamp": "01:23",
+  //           "seconds": 83,
+  //           "title": "Key Demo",
+  //           "description": "Main feature demonstration"
+  //           }
+  //       ]
+  //       `;
 
-        const result = await model.generateContent([
-        {
-            inlineData: {
-            mimeType: 'video/mp4',
-            data: videoBase64
-            }
-        },
-        prompt
-        ]);
-        const response = await result.response;
-        const highlightsText = response.text();        
-        let highlights;
-        try {
-            // Extract JSON array from highlightsText (which may contain extra text and code block markers)
-            const jsonMatch = highlightsText.match(/```json\s*([\s\S]*?)\s*```/i) || highlightsText.match(/\[\s*{[\s\S]*}\s*\]/);
-            if (jsonMatch) {
-                const jsonString = jsonMatch[1] ? jsonMatch[1] : jsonMatch[0];
-                highlights = JSON.parse(jsonString);
-            } else {
-                throw new Error('Could not extract JSON from highlightsText');
-            }
+  //       const result = await model.generateContent([
+  //       {
+  //           inlineData: {
+  //           mimeType: 'video/mp4',
+  //           data: videoBase64
+  //           }
+  //       },
+  //       prompt
+  //       ]);
+  //       const response = await result.response;
+  //       const highlightsText = response.text();        
+  //       let highlights;
+  //       try {
+  //           // Extract JSON array from highlightsText (which may contain extra text and code block markers)
+  //           const jsonMatch = highlightsText.match(/```json\s*([\s\S]*?)\s*```/i) || highlightsText.match(/\[\s*{[\s\S]*}\s*\]/);
+  //           if (jsonMatch) {
+  //               const jsonString = jsonMatch[1] ? jsonMatch[1] : jsonMatch[0];
+  //               highlights = JSON.parse(jsonString);
+  //           } else {
+  //               throw new Error('Could not extract JSON from highlightsText');
+  //           }
             
-            // Ensure we have exactly 5 highlights
-            if (!Array.isArray(highlights)) {
-                throw new Error('Response is not an array');
-            }
+  //           // Ensure we have exactly 5 highlights
+  //           if (!Array.isArray(highlights)) {
+  //               throw new Error('Response is not an array');
+  //           }
             
-            highlights = highlights.slice(0, 5); // Take only first 5
+  //           highlights = highlights.slice(0, 5); // Take only first 5
             
-            // Validate highlight format
-            highlights = highlights.map(highlight => ({
-                timestamp: highlight.timestamp || '00:00',
-                seconds: highlight.seconds || 0,
-                title: highlight.title || 'Highlight',
-                description: highlight.description || 'Key moment'
-            }));
+  //           // Validate highlight format
+  //           highlights = highlights.map(highlight => ({
+  //               timestamp: highlight.timestamp || '00:00',
+  //               seconds: highlight.seconds || 0,
+  //               title: highlight.title || 'Highlight',
+  //               description: highlight.description || 'Key moment'
+  //           }));
         
-        } catch (parseError) {
-            console.error('Failed to parse highlights:', parseError);
-            // Fallback: create highlights from transcription
-            highlights = transcriptObj.slice(0, 5).map((item, index) => ({
-                timestamp: item.timestamp,
-                seconds: item.seconds,
-                title: `Highlight ${index + 1}`,
-                description: item.text.substring(0, 60) + '...'
-            }));
-        }
+  //       } catch (parseError) {
+  //           console.error('Failed to parse highlights:', parseError);
+  //           // Fallback: create highlights from transcription
+  //           highlights = transcriptObj.slice(0, 5).map((item, index) => ({
+  //               timestamp: item.timestamp,
+  //               seconds: item.seconds,
+  //               title: `Highlight ${index + 1}`,
+  //               description: item.text.substring(0, 60) + '...'
+  //           }));
+  //       }
 
-        return { 
-        highlights: highlights,
-        raw: highlightsText 
-        };
-    }
+  //       return { 
+  //       highlights: highlights,
+  //       raw: highlightsText 
+  //       };
+  //   }
 
-  const processVideo = async (file: File, url: string) => {
+  const processVideo = async (file: File) => {
     if (!file) return;
 
     setIsProcessing(true);
