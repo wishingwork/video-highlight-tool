@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, SkipForward, Clock, Zap, FileVideo } from 'lucide-react';
 // import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -17,10 +17,7 @@ const VideoHighlightTool = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [activeTranscript, setActiveTranscript] = useState(0);
-//   const [transcriptionText, setTranscriptionText] = useState('');
-
-//   const videoRef = useRef(null);
-//   const fileInputRef = useRef(null);
+  const [selectedTranscriptIndices, setSelectedTranscriptIndices] = useState<number[]>([]);
 
   type TranscriptItem = {
     timestamp: string;
@@ -34,26 +31,7 @@ const VideoHighlightTool = () => {
     title: string;
     description: string;
   };
-//   const mockTranscription: TranscriptItem[] = [
-//     { timestamp: "00:15", seconds: 15, text: "Welcome to our comprehensive product demonstration" },
-//     { timestamp: "00:32", seconds: 32, text: "Let me show you the key features that make this special" },
-//     { timestamp: "01:05", seconds: 65, text: "First, we have the intuitive user interface" },
-//     { timestamp: "01:23", seconds: 83, text: "The dashboard provides real-time analytics and insights" },
-//     { timestamp: "01:45", seconds: 105, text: "Next, let's explore the advanced customization options" },
-//     { timestamp: "02:10", seconds: 130, text: "Users can personalize their experience completely" },
-//     { timestamp: "02:35", seconds: 155, text: "The integration capabilities are truly impressive" },
-//     { timestamp: "03:00", seconds: 180, text: "Connect with over 100 popular business tools" },
-//     { timestamp: "03:25", seconds: 205, text: "Finally, our world-class customer support" },
-//     { timestamp: "03:50", seconds: 230, text: "Available 24/7 to help you succeed" }
-//   ];
 
-//   const mockHighlights: HighlightItem[] = [
-//     { timestamp: "00:32", seconds: 32, title: "Feature Overview", description: "Introduction to key product features" },
-//     { timestamp: "01:23", seconds: 83, title: "Dashboard Demo", description: "Real-time analytics demonstration" },
-//     { timestamp: "01:45", seconds: 105, title: "Customization", description: "Advanced personalization options" },
-//     { timestamp: "02:35", seconds: 155, title: "Integrations", description: "Third-party tool connections" },
-//     { timestamp: "03:25", seconds: 205, title: "Support", description: "Customer service overview" }
-//   ];
 const transcriptObj: TranscriptItem[] = [
   {
       "timestamp": "00:08",
@@ -502,10 +480,94 @@ const highlightsObj: HighlightItem[] = [
     }
   };
 
-  const seekTo = (seconds: number) => {
+  // Helper: Get selected transcript blocks
+  const selectedTranscripts = selectedTranscriptIndices
+    .sort((a, b) => a - b)
+    .map(idx => transcription[idx])
+    .filter(Boolean);
+
+  // Helper: Get highlight objects from selected transcript blocks
+  const selectedHighlights = selectedTranscripts.map(item => ({
+    timestamp: item.timestamp,
+    seconds: item.seconds,
+    title: item.text.substring(0, 20) + (item.text.length > 20 ? "..." : ""),
+    description: item.text.substring(0, 60) + (item.text.length > 60 ? "..." : "")
+  }));
+
+  // Helper: Find current transcript index
+  const getCurrentTranscriptIndex = () => {
+    return transcription.findIndex((item, index) => {
+      const nextItem = transcription[index + 1];
+      return currentTime >= item.seconds && (!nextItem || currentTime < nextItem.seconds);
+    });
+  };
+
+  // Helper: Get current transcript text
+  const currentTranscript = transcription[getCurrentTranscriptIndex()];
+
+  // Toggle transcript block selection
+  const toggleTranscriptSelection = (index: number) => {
+    setSelectedTranscriptIndices(prev => 
+      prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+    );
+  };
+
+  // Restrict playback to selected transcript blocks
+  useEffect(() => {
+    if (!videoRef.current || selectedTranscriptIndices.length === 0) return;
+    const sortedIndices = [...selectedTranscriptIndices].sort((a, b) => a - b);
+    const blocks = sortedIndices.map(idx => transcription[idx]).filter(Boolean);
+    if (blocks.length === 0) return;
+
+    // Find the current block (if any) that contains currentTime
+    const currentBlock = blocks.find((block, i) => {
+      const nextBlock = blocks[i + 1];
+      return currentTime >= block.seconds && (!nextBlock || currentTime < nextBlock.seconds);
+    });
+
+    // If not in any selected block, pause and seek to the start of the first selected block
+    if (
+      !currentBlock &&
+      isPlaying &&
+      currentTime > 0 &&
+      (currentTime < blocks[0].seconds || currentTime > blocks[blocks.length - 1].seconds)
+    ) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+      videoRef.current.currentTime = blocks[0].seconds;
+      setCurrentTime(blocks[0].seconds);
+    }
+
+    // If playing and passed the end of the current block, pause or jump to next block
+    if (isPlaying && currentBlock) {
+      const idx = transcription.findIndex(t => t.seconds === currentBlock.seconds);
+      const nextIdx = transcription.findIndex((t, i) => 
+        i > idx && selectedTranscriptIndices.includes(i)
+      );
+      const nextBlock = transcription[nextIdx];
+      const nextBlockStart = nextBlock ? nextBlock.seconds : null;
+      const nextBlockEnd = transcription[idx + 1]?.seconds ?? duration;
+
+      if (currentTime >= nextBlockEnd) {
+        if (nextBlockStart != null) {
+          videoRef.current.currentTime = nextBlockStart;
+          setCurrentTime(nextBlockStart);
+        } else {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        }
+      }
+    }
+  }, [currentTime, isPlaying, selectedTranscriptIndices, transcription, duration]);
+
+  // Seek to transcript block (and play if already playing)
+  const seekTo = (seconds: number, index?: number) => {
     if (videoRef.current) {
       videoRef.current.currentTime = seconds;
       setCurrentTime(seconds);
+      if (typeof index === "number") {
+        setActiveTranscript(index);
+      }
     }
   };
 
@@ -575,15 +637,29 @@ const highlightsObj: HighlightItem[] = [
                     {transcription.map((item, index) => (
                       <div
                         key={index}
-                        className={`p-3 rounded-lg cursor-pointer transition-all ${
+                        className={`p-3 rounded-lg cursor-pointer transition-all border ${
                           activeTranscript === index 
-                            ? 'bg-blue-600 bg-opacity-30 border border-blue-500' 
-                            : 'bg-slate-700 hover:bg-slate-600'
+                            ? 'bg-blue-600 bg-opacity-30 border-blue-500' 
+                            : selectedTranscriptIndices.includes(index)
+                              ? 'bg-yellow-500 bg-opacity-20 border-yellow-400'
+                              : 'bg-slate-700 hover:bg-slate-600 border-transparent'
                         }`}
-                        onClick={() => seekTo(item.seconds)}
+                        onClick={() => toggleTranscriptSelection(index)}
+                        title={selectedTranscriptIndices.includes(index) ? "Remove from highlights" : "Add to highlights"}
                       >
-                        <div className="text-sm text-blue-400 font-medium mb-1">
-                          {item.timestamp}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-blue-400 font-medium mb-1">
+                            {item.timestamp}
+                          </span>
+                          <button
+                            className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                              selectedTranscriptIndices.includes(index)
+                                ? 'bg-yellow-400 text-yellow-900'
+                                : 'bg-slate-600 text-slate-200'
+                            }`}
+                          >
+                            {selectedTranscriptIndices.includes(index) ? "Highlighted" : "Highlight"}
+                          </button>
                         </div>
                         <div className="text-sm leading-relaxed">
                           {item.text}
@@ -622,6 +698,12 @@ const highlightsObj: HighlightItem[] = [
                       </div>
                     </div>
                   )}
+                  {/* Transcript overlay when playing */}
+                  {isPlaying && currentTranscript && (
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-white px-4 py-2 rounded text-center max-w-xl text-lg shadow-lg pointer-events-none">
+                      {currentTranscript.text}
+                    </div>
+                  )}
                 </div>
 
                 {/* Video Controls */}
@@ -646,27 +728,27 @@ const highlightsObj: HighlightItem[] = [
                         style={{ width: `${getProgressPercentage()}%` }}
                       ></div>
                     </div>
-                    {/* Highlight Markers */}
-                    {highlights.map((highlight, index) => (
+                    {/* Highlight Markers for selected transcript blocks */}
+                    {selectedTranscripts.map((highlight, index) => (
                       <div
                         key={index}
                         className="absolute top-0 w-3 h-3 bg-yellow-500 rounded-full transform -translate-y-0.5 cursor-pointer hover:scale-125 transition-transform"
                         style={{ left: `${(highlight.seconds / duration) * 100}%` }}
                         onClick={() => seekTo(highlight.seconds)}
-                        title={highlight.title}
+                        title={highlight.text.substring(0, 30)}
                       ></div>
                     ))}
                   </div>
 
                   {/* Highlights */}
-                  {highlights.length > 0 && (
+                  {selectedHighlights.length > 0 && (
                     <div>
                       <h3 className="text-lg font-semibold mb-3 flex items-center">
                         <Zap className="w-5 h-5 mr-2 text-yellow-500" />
                         Key Highlights
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {highlights.map((highlight, index) => (
+                        {selectedHighlights.map((highlight, index) => (
                           <div
                             key={index}
                             className="bg-slate-700 rounded-lg p-3 cursor-pointer hover:bg-slate-600 transition-colors"
