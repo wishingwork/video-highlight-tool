@@ -12,7 +12,6 @@ type VideoProgressBarProps = {
 
 const VideoProgressBar: React.FC<VideoProgressBarProps> = ({
   duration,
-  currentTime,
   getProgressPercentage,
   selectedTranscripts,
   transcription,

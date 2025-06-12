@@ -56,7 +56,7 @@ const VideoHighlightTool = () => {
   }, []);
 
   // Restrict playback to selected transcript blocks (custom hook style)
-  useEffect(() => {
+  const restrictPlaybackToSelectedBlocks = useCallback(() => {
     if (!videoRef.current || selectedTranscriptIndices.length === 0) return;
     const sortedIndices = [...selectedTranscriptIndices].sort((a, b) => a - b);
     const blocks = sortedIndices.map(idx => transcription[idx]).filter(Boolean);
@@ -102,6 +102,10 @@ const VideoHighlightTool = () => {
       }
     }
   }, [currentTime, isPlaying, selectedTranscriptIndices, transcription, duration]);
+
+  useEffect(() => {
+    restrictPlaybackToSelectedBlocks();
+  }, [restrictPlaybackToSelectedBlocks]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
