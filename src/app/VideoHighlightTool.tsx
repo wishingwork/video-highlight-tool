@@ -24,153 +24,153 @@ const VideoHighlightTool = () => {
     text: string;
   };
   
-const transcriptObj: TranscriptItem[] = [
-  {
-      "timestamp": "00:08",
-      "seconds": 8,
-      "text": "Anti-war demonstrators protest U.S. involvement in the Vietnam War in mass marches, rallies and demonstrations."
-  },
-  {
-      "timestamp": "00:15",
-      "seconds": 15,
-      "text": "Central Park is the starting point for the parade to the UN building."
-  },
-  {
-      "timestamp": "00:18",
-      "seconds": 18,
-      "text": "The estimated 125,000 Manhattan marchers include students, housewives, beatnik poets, doctors, businessmen, teachers, priests and nuns."
-  },
-  {
-      "timestamp": "00:28",
-      "seconds": 28,
-      "text": "Makeup and costumes were bizarre."
-  },
-  {
-      "timestamp": "00:35",
-      "seconds": 35,
-      "text": "Before the parade, mass draft card burning was urged."
-  },
-  {
-      "timestamp": "00:38",
-      "seconds": 38,
-      "text": "Demonstrators claimed 200 cards were burned, but no accurate count could be determined."
-  },
-  {
-      "timestamp": "00:43",
-      "seconds": 43,
-      "text": "Reporters and onlookers were jostled away on purpose."
-  },
-  {
-      "timestamp": "00:48",
-      "seconds": 48,
-      "text": "Although mostly peaceful, shouted confrontations were frequent and fiery during the course of the march."
-  },
-  {
-      "timestamp": "00:56",
-      "seconds": 56,
-      "text": "The anti-war marchers were picketed by anti anti-war marchers who were hawkish toward the parading doves."
-  },
-  {
-      "timestamp": "01:06",
-      "seconds": 106,
-      "text": "Civil rights leader Martin Luther King leads the procession to the United Nations where he urges UN pressure to force the U.S. to stop bombing North Vietnam."
-  },
-  {
-      "timestamp": "01:19",
-      "seconds": 119,
-      "text": "Police arrested five persons as disorderly."
-  },
-  {
-      "timestamp": "01:22",
-      "seconds": 122,
-      "text": "Three were grabbed when they rushed the parade float."
-  },
-  {
-      "timestamp": "01:24",
-      "seconds": 124,
-      "text": "No serious injuries, however, in New York’s biggest anti-war march."
-  },
-  {
-      "timestamp": "01:31",
-      "seconds": 131,
-      "text": "A companion peace demonstration brings out 50,000 marchers in downtown San Francisco."
-  },
-  {
-      "timestamp": "01:36",
-      "seconds": 136,
-      "text": "They parade two miles along Market Street, pacifists and hippies together."
-  },
-  {
-      "timestamp": "01:43",
-      "seconds": 143,
-      "text": "Gigantic Kezar Stadium holds the mass rally where anti-war songs and speeches trigger a short scuffle between pro and con factions."
-  },
-  {
-      "timestamp": "01:50",
-      "seconds": 150,
-      "text": "No one was injured."
-  },
-  {
-      "timestamp": "01:53",
-      "seconds": 153,
-      "text": "Both demonstrations were sponsored by a loose coalition of left-wing pacifist and moderate anti-war groups."
-  },
-  {
-      "timestamp": "01:59",
-      "seconds": 159,
-      "text": "President Johnson, meanwhile, let it be known that the FBI is closely watching all anti-war activities."
-  },
-  {
-      "timestamp": "02:08",
-      "seconds": 208,
-      "text": "In Rome, a peace demonstration ironically erupts into violence near the U.S. embassy along the glamorous Via Veneto."
-  },
-  {
-      "timestamp": "02:15",
-      "seconds": 215,
-      "text": "Police alerted to possible trouble, stopped the marchers just short of their goal, and then the march turned into a riot."
-  },
-  {
-      "timestamp": "02:22",
-      "seconds": 222,
-      "text": "Peace placards, cafe chairs and fists flew in all directions."
-  },
-  {
-      "timestamp": "02:26",
-      "seconds": 226,
-      "text": "The next phase, a sit-down protest, but Rome police and firemen, too, had a solution."
-  },
-  {
-      "timestamp": "02:32",
-      "seconds": 232,
-      "text": "A solution H2O applied freely and under high pressure by the Rome fire brigade."
-  },
-  {
-      "timestamp": "02:37",
-      "seconds": 237,
-      "text": "The strong water jets bowled over demonstrators one after another."
-  },
-  {
-      "timestamp": "02:41",
-      "seconds": 241,
-      "text": "They dried out in the pokey."
-  },
-  {
-      "timestamp": "02:43",
-      "seconds": 243,
-      "text": "It took police one hour to break up the mob."
-  },
-  {
-      "timestamp": "02:46",
-      "seconds": 246,
-      "text": "33 rioters were arrested."
-  },
-  {
-      "timestamp": "02:48",
-      "seconds": 248,
-      "text": "Internal drama in the eternal city."
-  }
-];
+// const transcriptObj: TranscriptItem[] = [
+//   {
+//       "timestamp": "00:08",
+//       "seconds": 8,
+//       "text": "Anti-war demonstrators protest U.S. involvement in the Vietnam War in mass marches, rallies and demonstrations."
+//   },
+//   {
+//       "timestamp": "00:15",
+//       "seconds": 15,
+//       "text": "Central Park is the starting point for the parade to the UN building."
+//   },
+//   {
+//       "timestamp": "00:18",
+//       "seconds": 18,
+//       "text": "The estimated 125,000 Manhattan marchers include students, housewives, beatnik poets, doctors, businessmen, teachers, priests and nuns."
+//   },
+//   {
+//       "timestamp": "00:28",
+//       "seconds": 28,
+//       "text": "Makeup and costumes were bizarre."
+//   },
+//   {
+//       "timestamp": "00:35",
+//       "seconds": 35,
+//       "text": "Before the parade, mass draft card burning was urged."
+//   },
+//   {
+//       "timestamp": "00:38",
+//       "seconds": 38,
+//       "text": "Demonstrators claimed 200 cards were burned, but no accurate count could be determined."
+//   },
+//   {
+//       "timestamp": "00:43",
+//       "seconds": 43,
+//       "text": "Reporters and onlookers were jostled away on purpose."
+//   },
+//   {
+//       "timestamp": "00:48",
+//       "seconds": 48,
+//       "text": "Although mostly peaceful, shouted confrontations were frequent and fiery during the course of the march."
+//   },
+//   {
+//       "timestamp": "00:56",
+//       "seconds": 56,
+//       "text": "The anti-war marchers were picketed by anti anti-war marchers who were hawkish toward the parading doves."
+//   },
+//   {
+//       "timestamp": "01:06",
+//       "seconds": 106,
+//       "text": "Civil rights leader Martin Luther King leads the procession to the United Nations where he urges UN pressure to force the U.S. to stop bombing North Vietnam."
+//   },
+//   {
+//       "timestamp": "01:19",
+//       "seconds": 119,
+//       "text": "Police arrested five persons as disorderly."
+//   },
+//   {
+//       "timestamp": "01:22",
+//       "seconds": 122,
+//       "text": "Three were grabbed when they rushed the parade float."
+//   },
+//   {
+//       "timestamp": "01:24",
+//       "seconds": 124,
+//       "text": "No serious injuries, however, in New York’s biggest anti-war march."
+//   },
+//   {
+//       "timestamp": "01:31",
+//       "seconds": 131,
+//       "text": "A companion peace demonstration brings out 50,000 marchers in downtown San Francisco."
+//   },
+//   {
+//       "timestamp": "01:36",
+//       "seconds": 136,
+//       "text": "They parade two miles along Market Street, pacifists and hippies together."
+//   },
+//   {
+//       "timestamp": "01:43",
+//       "seconds": 143,
+//       "text": "Gigantic Kezar Stadium holds the mass rally where anti-war songs and speeches trigger a short scuffle between pro and con factions."
+//   },
+//   {
+//       "timestamp": "01:50",
+//       "seconds": 150,
+//       "text": "No one was injured."
+//   },
+//   {
+//       "timestamp": "01:53",
+//       "seconds": 153,
+//       "text": "Both demonstrations were sponsored by a loose coalition of left-wing pacifist and moderate anti-war groups."
+//   },
+//   {
+//       "timestamp": "01:59",
+//       "seconds": 159,
+//       "text": "President Johnson, meanwhile, let it be known that the FBI is closely watching all anti-war activities."
+//   },
+//   {
+//       "timestamp": "02:08",
+//       "seconds": 208,
+//       "text": "In Rome, a peace demonstration ironically erupts into violence near the U.S. embassy along the glamorous Via Veneto."
+//   },
+//   {
+//       "timestamp": "02:15",
+//       "seconds": 215,
+//       "text": "Police alerted to possible trouble, stopped the marchers just short of their goal, and then the march turned into a riot."
+//   },
+//   {
+//       "timestamp": "02:22",
+//       "seconds": 222,
+//       "text": "Peace placards, cafe chairs and fists flew in all directions."
+//   },
+//   {
+//       "timestamp": "02:26",
+//       "seconds": 226,
+//       "text": "The next phase, a sit-down protest, but Rome police and firemen, too, had a solution."
+//   },
+//   {
+//       "timestamp": "02:32",
+//       "seconds": 232,
+//       "text": "A solution H2O applied freely and under high pressure by the Rome fire brigade."
+//   },
+//   {
+//       "timestamp": "02:37",
+//       "seconds": 237,
+//       "text": "The strong water jets bowled over demonstrators one after another."
+//   },
+//   {
+//       "timestamp": "02:41",
+//       "seconds": 241,
+//       "text": "They dried out in the pokey."
+//   },
+//   {
+//       "timestamp": "02:43",
+//       "seconds": 243,
+//       "text": "It took police one hour to break up the mob."
+//   },
+//   {
+//       "timestamp": "02:46",
+//       "seconds": 246,
+//       "text": "33 rioters were arrested."
+//   },
+//   {
+//       "timestamp": "02:48",
+//       "seconds": 248,
+//       "text": "Internal drama in the eternal city."
+//   }
+// ];
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
@@ -268,13 +268,13 @@ const transcriptObj: TranscriptItem[] = [
         
         // Call transcription API
         console.log('Starting transcription...');
-        const transcriptionResult = transcriptObj;
-        // const transcriptionResult = await transcribeVideo(url);
+        // const transcriptionResult = transcriptObj;
+        const transcriptionResult = await transcribeVideo(url);
         console.log('Transcription completed:', transcriptionResult);
         
         // Step 2: Update state with results
-        // setTranscription(transcriptionResult.transcription);
-        setTranscription(transcriptObj);
+        setTranscription(transcriptionResult.transcription);
+        // setTranscription(transcriptObj);
           
     } catch (error) {
         console.error('Processing failed:', error);
